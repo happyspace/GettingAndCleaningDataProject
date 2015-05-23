@@ -6,3 +6,5 @@
 .Rprofile
 *.Rproj
 data/
+tidy.txt
+UCI HAR Dataset/
