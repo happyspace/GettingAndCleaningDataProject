@@ -37,6 +37,9 @@ run_analysis <- function(){
     # so get the indexes from names data frame 
     meanStdColIndex = grep("mean()|std()", names$V2, value = FALSE)
     
+    meanStdColNames = grep("mean()|std()", names$V2, value = TRUE)
+    write.table(meanStdColNames, "colnames.txt", row.names = FALSE)
+    
     # read test set 
     testXdt <- as.data.table(read.table("UCI HAR Dataset/test/X_test.txt"))
     # set to descripitive names
@@ -89,6 +92,12 @@ run_analysis <- function(){
     # group by activity and subject and summarise each variable
     # the output will be in the wide format
     tidy <- combined %>% dplyr::group_by(activity, subject) %>% summarise_each(funs(mean))
+    
+    # clean up names
+    names(tidy) <- gsub("[_-]", " ", names(tidy))
+    names(tidy) <- gsub("[\\(\\)]", "", names(tidy))
+    
+    write.table(names(tidy), "cleanNames.txt", row.name=FALSE)
     
     # write our tidy data
     write.table(tidy, "tidy.txt", row.name=FALSE)
