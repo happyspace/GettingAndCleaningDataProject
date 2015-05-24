@@ -5,16 +5,18 @@ fileURL <- "https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%2
 dataDir <- "./data"
 dataset.zip <- "./data/dataset.zip"
 
+# data test
+
+# data train
+
 run_analysis <- function(){
     # load libraries
     library(data.table)
     library(dplyr)
     library(tidyr)
     
-    dd <- file.exists(dataDir)
-    
     # create data folder
-    if(!dd) {
+    if(!file.exists(dataDir)) {
         dir.create(dataDir)
     }
     
@@ -37,6 +39,7 @@ run_analysis <- function(){
     
     # read test set 
     testXdt <- as.data.table(read.table("UCI HAR Dataset/test/X_test.txt"))
+    # set to descripitive names
     setnames(testXdt, as.character(names[,2]))
     
     # select columns we are interested in
@@ -70,14 +73,26 @@ run_analysis <- function(){
     
     colnames(activityTrain) <- c("activity")
     
+    # create the taining data table
     fullTrain <- bind_cols(subjectTrain, activityTrain, trainXdt)
-    
+    # create the full data table
     combined <- rbind(fullTest,fullTrain)
+    dplyr::arrange(.data = combined, subject, activity)
     
-    # 
+    # uncomment to inspect 
+    # write.table(combined, "combined.txt", row.name=FALSE)
+    
+    # count by group to double check our tidy data
+    counts <- combined %>% dplyr::count(activity, subject, sort=TRUE)
+    write.table(counts, "counts.txt", row.name=FALSE)
+    
+    # group by activity and subject and summarise each variable
+    # the output will be in the wide format
     tidy <- combined %>% dplyr::group_by(activity, subject) %>% summarise_each(funs(mean))
     
-    write.table(tidy, "tidy.txt")
+    # write our tidy data
+    write.table(tidy, "tidy.txt", row.name=FALSE)
     
+    # return tidy
     tidy
 }
