@@ -12,7 +12,10 @@ This project summarizes data collected in a study *Human Activity Recognition Us
 
 Source *run_analysis.R* within an R environment. *run_analysis.R* defines a function *run_analysis* which will download study data and preform the following analysis over the data.
 
-For each activity preformed by subjects in the study an average will be calculated. Two data set are created:
+* Extract variables concerning mean and standard deviation. 
+* With in this data set, for each variable an average will be calculated for each activity preformed by subjects in the study . 
+
+Two data set are created:
 
 * counts.txt -- the count of each subject and each activity preformed by the subject
 * tidy.txt -- average of each variable for each activity for each subject
