@@ -20,6 +20,8 @@ Two data set are created:
 * counts.txt -- the count of each subject and each activity preformed by the subject
 * tidy.txt -- average of each variable for each activity for each subject
 
+Plese note that tidy.txt checked with the project is completely correct. 
+
 To run the analysis:
 
 ```R
