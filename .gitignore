@@ -6,8 +6,7 @@
 .Rprofile
 *.Rproj
 data/
-tidy.txt
-counts.txt
+eval/
 combined.txt
 UCI HAR Dataset/
 .idea

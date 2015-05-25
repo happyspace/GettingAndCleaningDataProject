@@ -5,9 +5,19 @@ fileURL <- "https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%2
 dataDir <- "./data"
 dataset.zip <- "./data/dataset.zip"
 
+# variables labels
+features.txt <- "UCI HAR Dataset/features.txt"
+activity_labels.txt <- "UCI HAR Dataset/activity_labels.txt"
+
 # data test
+X_test.txt <- "UCI HAR Dataset/test/X_test.txt"
+subject_test.txt <- "UCI HAR Dataset/test/subject_test.txt"
+y_test.txt <- "UCI HAR Dataset/test/y_test.txt"
 
 # data train
+X_train.txt <- "UCI HAR Dataset/train/X_train.txt"
+subject_train.txt <- "UCI HAR Dataset/train/subject_train.txt"
+y_train.txt <- "UCI HAR Dataset/train/y_train.txt"
 
 run_analysis <- function(){
     # load libraries
@@ -28,59 +38,28 @@ run_analysis <- function(){
     }
     
     # read variable names (column names)
-    names <- read.table("UCI HAR Dataset/features.txt")
+    names <- read.table(features.txt)
     # read activity names
-    activityNames <- read.table("UCI HAR Dataset/activity_labels.txt")
-    
+    activityNames <- read.table(activity_labels.txt)
+      
     # There are duplicate column names. Error: found duplicated column names
     # https://class.coursera.org/getdata-014/forum/thread?thread_id=56
     # so get the indexes from names data frame 
-    meanStdColIndex = grep("mean()|std()", names$V2, value = FALSE)
+    meanStdColIndex = grep("mean\\(\\)|std\\(\\)", names$V2, value = FALSE)
     
-    meanStdColNames = grep("mean()|std()", names$V2, value = TRUE)
-    write.table(meanStdColNames, "colnames.txt", row.names = FALSE)
     
-    # read test set 
-    testXdt <- as.data.table(read.table("UCI HAR Dataset/test/X_test.txt"))
-    # set to descripitive names
-    setnames(testXdt, as.character(names[,2]))
+    full_test <- do.call ( "createDataTable",
+                           list(x_data_path = X_test.txt, y_data_path = y_test.txt, 
+                                 subject_path = subject_test.txt, y_labels =  activityNames, 
+                                 variables = names, columns = meanStdColIndex) )
     
-    # select columns we are interested in
-    testXdt <- select(testXdt, meanStdColIndex)
-    
-    subjectTest <- read.table("UCI HAR Dataset/test/subject_test.txt")
-    colnames(subjectTest) <- c("subject")
-    activityTest <- read.table("UCI HAR Dataset/test/y_test.txt")
-    # use activity names
-    activityTest <- 
-        merge(x = activityNames, y = activityTest, by.x = "V1", by.y = "V1")  %>%
-        select(V2)
-    colnames(activityTest) <- c("activity")
-    
-    fullTest <- bind_cols(subjectTest, activityTest, testXdt)
-       
-    # read train set
-    trainXdt <- as.data.table(read.table("UCI HAR Dataset/train/X_train.txt"))
-    setnames(trainXdt, as.character(names[,2]))
-    
-    # select columns we are interested in
-    trainXdt <- select(trainXdt, meanStdColIndex)
-    
-    subjectTrain <- read.table("UCI HAR Dataset/train/subject_train.txt")
-    colnames(subjectTrain) <- c("subject")
-    activityTrain <- read.table("UCI HAR Dataset/train/y_train.txt")
-    # use activity names
-    activityTrain <- 
-        merge(x = activityNames, y = activityTrain, by.x = "V1", by.y = "V1")  %>%
-        select(V2)
-    
-    colnames(activityTrain) <- c("activity")
-    
-    # create the taining data table
-    fullTrain <- bind_cols(subjectTrain, activityTrain, trainXdt)
+    full_train <- do.call( "createDataTable", 
+                           list(x_data_path = X_train.txt, y_data_path = y_train.txt, 
+                                subject_path = subject_train.txt, y_labels =  activityNames, 
+                                variables = names, columns = meanStdColIndex) )
+      
     # create the full data table
-    combined <- rbind(fullTest,fullTrain)
-    dplyr::arrange(.data = combined, subject, activity)
+    combined <- rbind(full_test, full_train)
     
     # uncomment to inspect 
     # write.table(combined, "combined.txt", row.name=FALSE)
@@ -97,11 +76,36 @@ run_analysis <- function(){
     names(tidy) <- gsub("[_-]", " ", names(tidy))
     names(tidy) <- gsub("[\\(\\)]", "", names(tidy))
     
-    write.table(names(tidy), "cleanNames.txt", row.name=FALSE)
+    # write out for codebook
+    # write.table(names(tidy), "cleanNames.txt", row.name=FALSE)
     
     # write our tidy data
     write.table(tidy, "tidy.txt", row.name=FALSE)
     
     # return tidy
     tidy
+}
+
+createDataTable <- function(x_data_path, y_data_path, subject_path, 
+                              y_labels,  variables, columns) {
+    # read data set x 
+    data_set_x <- as.data.table(read.table(x_data_path))
+    # set to descripitive names
+    setnames(data_set_x, as.character(variables[,2]))
+    # select columns we are interested in
+    data_set_x <- select(data_set_x, columns)   
+    # read subjects
+    subjects <- read.table(subject_path)
+    setnames(subjects, c("subject"))
+    # read activities 
+    activity <- read.table(y_data_path)
+    # use activity names
+    activity_merged <- activity %>%
+        mutate(V1 = factor(V1, labels=y_labels$V2)) %>%
+        rename(activity=V1) %>%
+        select(activity) 
+    # bind columns
+    full <- bind_cols(subjects, activity_merged, data_set_x)
+    
+    full  
 }
