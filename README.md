@@ -22,7 +22,7 @@ Two data set are created:
 
 Plese note that tidy.txt checked with the project is completely correct. 
 
-To run the analysis:
+To run the analysis:  
 
 ```R
 source("run_analysis.R")
