@@ -19,8 +19,10 @@
   
 ## Variables in Analysis  
   
-Variable names have been modified from to original study to exclude punctuation for readability.    
-Variable are an average as  described above and are in the units of the study. See below for variables defined in the base study.  
+Variable names have been modified from the original study to exclude punctuation for readability.    
+Variables are an average as described above and are in the units of the study.  
+
+See below for variables defined in the base study.  
     
 activity    
 subject    
